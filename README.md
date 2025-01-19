@@ -1,13 +1,12 @@
-Collecting workspace information
+## What is Retrieval-Augmented Generation (RAG)?
 
-To set up and run this project, follow these steps:
+Retrieval-Augmented Generation (RAG) is a technique that combines the strengths of information retrieval and natural language generation. It involves retrieving relevant documents or data from a large corpus and using this information to generate more accurate and contextually relevant responses. This approach enhances the capabilities of AI models by providing them with access to a vast amount of external knowledge, leading to more informed and precise outputs.
 
 ## Prerequisites
 
 1. [.NET SDK 7.0](https://dotnet.microsoft.com/download/dotnet/7.0) or later
 2. [Azure Subscription](https://azure.microsoft.com/en-us/free/)
 3. [Azure OpenAI Service](https://azure.microsoft.com/en-us/services/cognitive-services/openai-service/)
-4. [Azure Cognitive Search](https://azure.microsoft.com/en-us/services/search/)
 
 ## Azure Resource Setup
 ![Azure RAG AI Diagram](image/azure-rag-ai-diagram.png)
