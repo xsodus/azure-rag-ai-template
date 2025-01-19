@@ -33,20 +33,21 @@ AzureSearchChatExtensionConfiguration ownDataConfig = new()
 // Send request to Azure OpenAI model  
 Console.WriteLine("...Sending the following request to Azure OpenAI endpoint...");  
 
-Stream imageStream = File.OpenRead("<local-path>/somewhere.png");
+// Chat with image input from local file
+/*Stream imageStream = File.OpenRead("<local-path>/somewhere.png");
 
-// Chat with image input
 ChatMessageImageContentItem imageContentItem = new ChatMessageImageContentItem(
     imageStream,
     "image/png",
     ChatMessageImageDetailLevel.Low
-);
-
-/*ChatMessageImageContentItem imageContentItem = new ChatMessageImageContentItem(
-    new Uri("https://upload.wikimedia.org/wikipedia/commons/8/85/Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007_icon.png"),
-    ChatMessageImageDetailLevel.Low
 );*/
 
+ChatMessageImageContentItem imageContentItem = new ChatMessageImageContentItem(
+    new Uri("https://upload.wikimedia.org/wikipedia/commons/8/85/Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007_icon.png"),
+    ChatMessageImageDetailLevel.Low
+);
+
+// System message to setup role and expectation result
 ChatRequestSystemMessage systemMessage = new ChatRequestSystemMessage(
     "You're travel agent assistant who can build the travel plan and optimize the budget for the customer. I need you to return the result as JSON data below:" +
     "{\"place_name\":\"<place_name>\", \"place_description\":\"<place_description>\"}"
