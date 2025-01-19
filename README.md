@@ -125,22 +125,6 @@ The embeddings are used to create a vector index for efficient and context-aware
     dotnet restore
     ```
 
-3. Update the 
-
-appsettings.json
-
- file with your Azure OpenAI and Azure Cognitive Search credentials:
-    ```json
-    {
-        "AzureOAIEndpoint": "<your-azure-openai-endpoint>",
-        "AzureOAIKey": "<your-azure-openai-key>",
-        "AzureOAIDeploymentName": "<your-azure-openai-deployment-name>",
-        "AzureSearchEndpoint": "<your-azure-search-endpoint>",
-        "AzureSearchKey": "<your-azure-search-key>",
-        "AzureSearchIndex": "<your-azure-search-index>"
-    }
-    ```
-
 ## Running the Project
 
 1. Build the project:
