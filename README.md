@@ -10,7 +10,45 @@ To set up and run this project, follow these steps:
 4. [Azure Cognitive Search](https://azure.microsoft.com/en-us/services/search/)
 
 ## Azure Resource Setup
+![Azure RAG AI Diagram](image/azure-rag-ai-diagram.png)
 
+This diagram represents an Azure-based architecture for implementing Retrieval-Augmented Generation (RAG) with AI models. Here's the explanation of the relationships in the context of the Azure ecosystem:
+
+### User/Application:
+
+This is the entry point where users interact with the system. The users send their queries or requests via an application interface.
+OpenAI GPT-4 or GPT-4-turbo:
+
+This component processes user messages and generates contextually relevant queries or responses.
+The user queries are enriched or transformed into a format suitable for the search process.
+
+### AI Search with Vector Index:
+
+This searches through a vector index created by Azure's Cognitive Search or other AI tools.
+Vector embeddings, representing the contents of documents, are queried to retrieve the most relevant documents from the indexed data.
+
+### Azure Blob Storage:
+
+This serves as the primary storage for various types of files like PDFs, images, Excel files, and other documents.
+It contains the data corpus used by the vector search engine.
+Azure OpenAI Embedding Model (text-embedding-ada-002):
+
+This model generates vector embeddings for the documents in the blob storage.
+The embeddings are used to create a vector index for efficient and context-aware searches.
+
+### Workflow:
+1. User Input: A user sends a query or message.
+2. GPT-4 Processing: The query is pre-processed by the GPT model, ensuring it is tailored for retrieval.
+3. Search Query: The query is directed to the AI Search with Vector Index to find semantically relevant content.
+4. Vector Search: Using vector embeddings, the search system identifies relevant documents stored in the Blob Storage.
+5. Response: The retrieved content is processed and used by GPT-4 to generate a detailed and accurate response, sent back to the user.
+
+### Azure Key Relationships:
+- Blob Storage and Embedding Model: Data in Blob Storage is transformed into vector embeddings using the embedding model, making it searchable.
+- AI Search and GPT-4: AI Search acts as a backend to GPT-4, supplying it with relevant data for improved responses.
+- User and Azure AI: Users interact with an intelligent system that combines Azure's storage, search, and AI capabilities.
+
+### Setup Resource Steps
 1. **Create Azure OpenAI Resource**:
     - Go to the Azure portal and create a new resource in the `East US` region with the `gpt-4o-mini` model, which supports both text and image input at the lowest price.
     - On the Azure OpenAI page, create a new resource with the following details:
