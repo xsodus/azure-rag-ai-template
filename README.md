@@ -218,28 +218,19 @@ string newQuestion = $"Tell me about hotels near {placeName}.";
 A new `ChatCompletionsOptions` object is created with the new question and the RAG data source configuration. The `GetChatCompletions` method is called again to get the final response.
 
 ```csharp
-ChatCompletionsOptions newChatOptions = new ChatCompletionsOptions
+ChatCompletionsOptions chatCompletionsOptions = new ChatCompletionsOptions()
 {
-    Messages = new List<ChatMessage>
+    Messages =
     {
-        new ChatMessage
-        {
-            Role = ChatMessageRole.System,
-            Content = systemMessage.Content
-        },
-        new ChatMessage
-        {
-            Role = ChatMessageRole.User,
-            Content = newQuestion
-        }
+        systemMessage,
+        new ChatRequestUserMessage(nextQuestion)
     },
-    DataSources = new List<ChatDataSource>
+    Temperature = 0.2f,
+    DeploymentName = oaiDeploymentName,
+    // Embed a vector data source (RAG)
+    AzureExtensionsOptions = new AzureChatExtensionsOptions()
     {
-        new ChatDataSource
-        {
-            Type = ChatDataSourceType.AzureCognitiveSearch,
-            Configuration = azureSearchConfig
-        }
+        Extensions = {ownDataConfig}
     }
 };
 
