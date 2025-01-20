@@ -30,7 +30,8 @@ Vector embeddings, representing the contents of documents, are queried to retrie
 
 This serves as the primary storage for various types of files like PDFs, images, Excel files, and other documents.
 It contains the data corpus used by the vector search engine.
-Azure OpenAI Embedding Model (text-embedding-ada-002):
+
+### Azure OpenAI Embedding Model (text-embedding-ada-002):
 
 This model generates vector embeddings for the documents in the blob storage.
 The embeddings are used to create a vector index for efficient and context-aware searches.
