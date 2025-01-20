@@ -137,11 +137,133 @@ The embeddings are used to create a vector index for efficient and context-aware
     dotnet run
     ```
 
-## Usage
+## Overview
 
-The project will initialize the Azure OpenAI client and send a request to the Azure OpenAI endpoint. It will then process the response and print the results to the console.
+The `RAGAI.cs`file is part of a project that uses Azure OpenAI and Azure Cognitive Search to implement a Retrieval-Augmented Generation (RAG) system. This system processes user queries, retrieves relevant information from a data source, and generates contextually relevant responses.
 
-For more details, refer to the source code in 
+### Code Explanation
 
-RAGAI.cs
+#### 1. Configuration
+
+The application reads configuration settings from 
+
+appsettings.json
+
+using `Microsoft.Extensions.Configuration`. This includes settings for Azure OpenAI and Azure Cognitive Search.
+
+#### 2. Initialize Azure OpenAI Client
+
+An `OpenAIClient` is initialized with the Azure OpenAI endpoint and key. This client is used to interact with the Azure OpenAI service.
+
+#### 3. Configure Data Source
+
+An `AzureSearchChatExtensionConfiguration` object is created to configure the Azure Cognitive Search data source. This configuration is used to retrieve relevant documents from the data source.
+
+#### 4. Create Chat Message with Image Content
+
+A `ChatMessageImageContentItem` is created with an image URL. This object represents an image that will be used as input for the OpenAI model.
+
+```csharp
+ChatMessageImageContentItem imageContentItem = new ChatMessageImageContentItem(
+    new Uri("https://upload.wikimedia.org/wikipedia/commons/8/85/Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007_icon.png"),
+    ChatMessageImageDetailLevel.Low
+);
+```
+
+#### 5. Create System Message
+
+A `ChatRequestSystemMessage` is created to set up the role and expected result format. This message defines the role of the AI model and specifies the format of the response.
+
+```csharp
+ChatRequestSystemMessage systemMessage = new ChatRequestSystemMessage(
+    "You're travel agent assistant who can build the travel plan and optimize the budget for the customer. I need you to return the result as JSON data below:" +
+    "{\"place_name\":\"<place_name>\", \"place_description\":\"<place_description>\"}"
+);
+```
+
+#### 6. Ask the Model About the Place in the Image
+
+A `ChatCompletionsOptions` object is created with the system message and user message asking about the place in the image. The `GetChatCompletions` method is called on the `OpenAIClient` to get the response from the model.
+
+```csharp
+ChatCompletionsOptions chatOptions = new ChatCompletionsOptions
+{
+    Messages = new List<ChatMessage>
+    {
+        new ChatMessage
+        {
+            Role = ChatMessageRole.System,
+            Content = systemMessage.Content
+        },
+        new ChatMessage
+        {
+            Role = ChatMessageRole.User,
+            Content = "What is this place?"
+        }
+    },
+    ImageContent = imageContentItem
+};
+
+ChatCompletionsResponse response = openAIClient.GetChatCompletions(chatOptions);
+```
+
+#### 7. Process Response
+
+The response is deserialized from JSON to a dictionary. A new question is generated based on the response.
+
+```csharp
+var responseData = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Choices[0].Message.Content);
+string placeName = responseData["place_name"];
+string newQuestion = $"Tell me about hotels near {placeName}.";
+```
+
+#### 8. Ask About Hotels Near the Place
+
+A new `ChatCompletionsOptions` object is created with the new question and the RAG data source configuration. The `GetChatCompletions` method is called again to get the final response.
+
+```csharp
+ChatCompletionsOptions newChatOptions = new ChatCompletionsOptions
+{
+    Messages = new List<ChatMessage>
+    {
+        new ChatMessage
+        {
+            Role = ChatMessageRole.System,
+            Content = systemMessage.Content
+        },
+        new ChatMessage
+        {
+            Role = ChatMessageRole.User,
+            Content = newQuestion
+        }
+    },
+    DataSources = new List<ChatDataSource>
+    {
+        new ChatDataSource
+        {
+            Type = ChatDataSourceType.AzureCognitiveSearch,
+            Configuration = azureSearchConfig
+        }
+    }
+};
+
+ChatCompletionsResponse finalResponse = openAIClient.GetChatCompletions(newChatOptions);
+```
+
+#### 9. Print Response
+
+The final response is printed to the console. If citations are enabled, the citations are also printed.
+
+```csharp
+Console.WriteLine(finalResponse.Choices[0].Message.Content);
+
+if (finalResponse.Citations != null)
+{
+    foreach (var citation in finalResponse.Citations)
+    {
+        Console.WriteLine($"Citation: {citation.Source}");
+    }
+}
+```
+
 
