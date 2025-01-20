@@ -236,21 +236,3 @@ ChatCompletionsOptions chatCompletionsOptions = new ChatCompletionsOptions()
 
 ChatCompletionsResponse finalResponse = openAIClient.GetChatCompletions(newChatOptions);
 ```
-
-#### 9. Print Response
-
-The final response is printed to the console. If citations are enabled, the citations are also printed.
-
-```csharp
-Console.WriteLine(finalResponse.Choices[0].Message.Content);
-
-if (finalResponse.Citations != null)
-{
-    foreach (var citation in finalResponse.Citations)
-    {
-        Console.WriteLine($"Citation: {citation.Source}");
-    }
-}
-```
-
-
