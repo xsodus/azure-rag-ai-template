@@ -186,22 +186,18 @@ ChatRequestSystemMessage systemMessage = new ChatRequestSystemMessage(
 A `ChatCompletionsOptions` object is created with the system message and user message asking about the place in the image. The `GetChatCompletions` method is called on the `OpenAIClient` to get the response from the model.
 
 ```csharp
-ChatCompletionsOptions chatOptions = new ChatCompletionsOptions
+ChatCompletionsOptions chatCompletionsOptions = new ChatCompletionsOptions()
 {
-    Messages = new List<ChatMessage>
+    Messages =
     {
-        new ChatMessage
-        {
-            Role = ChatMessageRole.System,
-            Content = systemMessage.Content
-        },
-        new ChatMessage
-        {
-            Role = ChatMessageRole.User,
-            Content = "What is this place?"
-        }
+        systemMessage,
+        new ChatRequestUserMessage(
+            new ChatMessageTextContentItem("What is this place in the image?"),
+            imageContentItem
+        )
     },
-    ImageContent = imageContentItem
+    Temperature = 0.2f,
+    DeploymentName = oaiDeploymentName
 };
 
 ChatCompletionsResponse response = openAIClient.GetChatCompletions(chatOptions);
