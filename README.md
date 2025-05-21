@@ -118,7 +118,7 @@ The embeddings are used to create a vector index for efficient and context-aware
 1. Clone the repository:
     ```sh
     git clone git@github.com:xsodus/azure-rag-ai-template.git
-    cd azure-rag-ai-template
+    cd azure-rag-ai-template/simple-code
     ```
 
 2. Restore the dependencies:
