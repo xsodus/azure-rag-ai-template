@@ -1,4 +1,4 @@
-using api.Controllers;
+using api.Controllers.V1_0;
 using api.DTOs;
 using api.Interfaces;
 using api.Services;

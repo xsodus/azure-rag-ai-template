@@ -2,7 +2,7 @@ using api.DTOs;
 using api.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace api.Controllers
+namespace api.Controllers.V1_0
 {
     /// <summary>
     /// Controller for Azure OpenAI operations following SOLID principles
