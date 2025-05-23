@@ -2,11 +2,12 @@ using System.Text.Json;
 using Azure;
 using Azure.AI.OpenAI;
 using api.DTOs;
+using api.Interfaces;
 using Microsoft.Extensions.Configuration;
 
 namespace api.Services
 {
-    public class AzureOpenAIService
+    public class AzureOpenAIService : IAzureOpenAIService
     {
         private readonly OpenAIClient _client;
         private readonly string _deploymentName;

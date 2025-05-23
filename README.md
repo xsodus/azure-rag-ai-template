@@ -1,3 +1,46 @@
+# Azure RAG AI Template
+
+This project provides a structured template for building Retrieval Augmented Generation (RAG) AI applications using Azure OpenAI and Azure AI Search.
+
+## Getting Started
+
+1. Clone this repository
+2. Update the `appsettings.json` file with your Azure OpenAI and Azure AI Search credentials
+3. Build and run the project:
+   ```bash
+   cd /path/to/azure-rag-ai-template/api
+   dotnet build
+   dotnet run
+   ```
+4. Access the API documentation at `https://localhost:7222/swagger/index.html`
+
+### Development Mode
+
+For development, you can use the in-memory implementation to avoid hitting Azure APIs:
+
+```json
+{
+  "UseInMemoryServices": true
+}
+```
+
+### Rate Limiting Configuration
+
+The API includes rate limiting to prevent abuse. Configure limits in `appsettings.json`:
+
+```json
+"IpRateLimiting": {
+  "EnableEndpointRateLimiting": true,
+  "GeneralRules": [
+    {
+      "Endpoint": "*:/api/v1/AzureOpenAI/chat",
+      "Period": "1m",
+      "Limit": 20
+    }
+  ]
+}
+```
+
 ## What is Retrieval-Augmented Generation (RAG)?
 
 Retrieval-Augmented Generation (RAG) is a technique that combines the strengths of information retrieval and natural language generation. It involves retrieving relevant documents or data from a large corpus and using this information to generate more accurate and contextually relevant responses. This approach enhances the capabilities of AI models by providing them with access to a vast amount of external knowledge, leading to more informed and precise outputs.
@@ -7,6 +50,69 @@ Retrieval-Augmented Generation (RAG) is a technique that combines the strengths 
 1. [.NET SDK 7.0](https://dotnet.microsoft.com/download/dotnet/7.0) or later
 2. [Azure Subscription](https://azure.microsoft.com/en-us/free/)
 3. [Azure OpenAI Service](https://azure.microsoft.com/en-us/services/cognitive-services/openai-service/)
+
+## SOLID Principles Implementation
+
+This project has been refactored to follow SOLID principles:
+
+### Single Responsibility Principle (SRP)
+
+Each class has one reason to change:
+
+- `AzureOpenAIService`: Communicates with Azure OpenAI API
+- `ChatRequestHandler`: Handles chat request processing
+- `RequestValidator`: Validates incoming requests
+- `ErrorHandler`: Handles errors and creates appropriate HTTP responses
+- `AzureOpenAIController`: Handles HTTP requests and coordinates responses
+
+### Open/Closed Principle (OCP)
+
+The design is open for extension but closed for modification:
+
+- All components depend on interfaces rather than concrete implementations
+- New validation rules can be added without changing existing code
+- New error handling strategies can be added without changing controller code
+- In-memory service implementation can be used for testing without modifying production code
+
+### Liskov Substitution Principle (LSP)
+
+Subtypes are substitutable for their base types:
+
+- `InMemoryAzureOpenAIService` can be used anywhere `IAzureOpenAIService` is expected
+- Tests demonstrate that the substitution works correctly
+
+### Interface Segregation Principle (ISP)
+
+Interfaces are client-specific rather than general-purpose:
+
+- `IChatRequestHandler`: Handles only chat-specific requests
+- `IRequestValidator`: Focuses only on request validation
+- `IErrorHandler`: Specializes in error handling
+- `IAzureOpenAIService`: Provides only OpenAI-specific functionality
+
+### Dependency Inversion Principle (DIP)
+
+High-level modules depend on abstractions, not low-level modules:
+
+- Controllers depend on interfaces, not concrete implementations
+- Services depend on interfaces, not concrete implementations
+- Service registration with dependency injection supports different environments
+
+## Key Features
+
+- **SOLID Architecture**: Follows all SOLID principles for maintainable, extensible code
+- **API Versioning**: Supports versioned API endpoints for backward compatibility
+- **Rate Limiting**: Protects the API from abuse with configurable rate limits
+- **Data Validation**: Uses data annotations and custom validators
+- **Error Handling**: Centralized error handling with appropriate HTTP status codes
+- **Testing**: Comprehensive unit and integration tests
+- **Swagger Documentation**: Interactive API documentation with versioning support
+- **In-Memory Testing**: Supports testing without hitting real Azure services
+
+## API Endpoints
+
+- `POST /api/v1/AzureOpenAI/chat`: Text-based queries with RAG support
+- `POST /api/v1/AzureOpenAI/chat-with-image`: Image-based queries with RAG follow-up
 
 ## Azure Resource Setup
 ![Azure RAG AI Diagram](image/azure-rag-ai-diagram.png)
