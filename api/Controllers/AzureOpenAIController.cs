@@ -1,4 +1,5 @@
 using api.Services;
+using api.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Controllers
@@ -19,7 +20,7 @@ namespace api.Controllers
         /// <summary>
         /// Send a text query to Azure OpenAI with optional RAG support
         /// </summary>
-        [HttpPost("query")]
+        [HttpPost("chat")]
         public async Task<IActionResult> Query([FromBody] QueryRequest request)
         {
             try
@@ -42,7 +43,7 @@ namespace api.Controllers
         /// <summary>
         /// Process an image and follow up with a RAG-powered query
         /// </summary>
-        [HttpPost("image-query")]
+        [HttpPost("chat-with-image")]
         public async Task<IActionResult> ImageQuery([FromBody] ImageQueryRequest request)
         {
             try
@@ -54,9 +55,10 @@ namespace api.Controllers
                     request.FollowUpTemplate,
                     request.Temperature);
 
-                return Ok(new { 
-                    imageResponse, 
-                    followUpResponse 
+                return Ok(new ImageQueryResponse 
+                { 
+                    ImageResponse = imageResponse, 
+                    FollowUpResponse = followUpResponse 
                 });
             }
             catch (Exception ex)
@@ -65,28 +67,5 @@ namespace api.Controllers
                 return StatusCode(500, new { error = "An error occurred while processing your image query." });
             }
         }
-    }
-
-    /// <summary>
-    /// Request model for text-based queries
-    /// </summary>
-    public class QueryRequest
-    {
-        public string SystemPrompt { get; set; } = "You are a helpful assistant.";
-        public string UserQuery { get; set; } = "";
-        public bool UseRAG { get; set; } = true;
-        public float Temperature { get; set; } = 0.2f;
-    }
-
-    /// <summary>
-    /// Request model for image-based queries with RAG follow-up
-    /// </summary>
-    public class ImageQueryRequest
-    {
-        public string SystemPrompt { get; set; } = "You are a helpful assistant.";
-        public string InitialImageQuery { get; set; } = "What is shown in this image?";
-        public string ImageUrl { get; set; } = "";
-        public string FollowUpTemplate { get; set; } = "Tell me more about: {0}";
-        public float Temperature { get; set; } = 0.2f;
     }
 }

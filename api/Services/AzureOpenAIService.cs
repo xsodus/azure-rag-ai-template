@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Azure;
 using Azure.AI.OpenAI;
+using api.DTOs;
 using Microsoft.Extensions.Configuration;
 
 namespace api.Services
@@ -174,23 +175,5 @@ namespace api.Services
 
             return (imageResponse, followUpResponse);
         }
-    }
-
-    /// <summary>
-    /// Response object for RAG queries including answer and citations
-    /// </summary>
-    public class RAGResponse
-    {
-        public string Answer { get; set; } = string.Empty;
-        public List<Citation> Citations { get; set; } = new List<Citation>();
-    }
-
-    /// <summary>
-    /// Citation from a RAG source
-    /// </summary>
-    public class Citation
-    {
-        public string Title { get; set; } = string.Empty;
-        public string Url { get; set; } = string.Empty;
     }
 }
