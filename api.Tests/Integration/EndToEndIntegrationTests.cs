@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace api.Tests.Integration
@@ -71,8 +73,10 @@ namespace api.Tests.Integration
             Assert.Equal(400, badRequestResult.StatusCode);
             
             // Verify the response contains the expected error message
-            var errorResponse = Assert.IsType<dynamic>(badRequestResult.Value);
-            Assert.Equal("User query is required", (string)errorResponse.error);
+            var json = JsonConvert.SerializeObject(badRequestResult.Value);
+            var errorObj = JsonConvert.DeserializeObject<JObject>(json);
+            
+            Assert.Equal("User query is required", errorObj?["error"]?.ToString());
         }
 
         [Fact]
@@ -96,8 +100,10 @@ namespace api.Tests.Integration
             Assert.Equal(400, badRequestResult.StatusCode);
             
             // Verify the response contains the expected error message
-            var errorResponse = Assert.IsType<dynamic>(badRequestResult.Value);
-            Assert.Contains("Invalid image URL format", (string)errorResponse.error);
+            var json = JsonConvert.SerializeObject(badRequestResult.Value);
+            var errorObj = JsonConvert.DeserializeObject<JObject>(json);
+            
+            Assert.Contains("Invalid image URL format", errorObj?["error"]?.ToString());
         }
 
         [Fact]

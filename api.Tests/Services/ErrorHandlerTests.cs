@@ -3,6 +3,8 @@ using api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace api.Tests.Services
@@ -34,8 +36,12 @@ namespace api.Tests.Services
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(400, badRequestResult.StatusCode);
-            var error = Assert.IsType<dynamic>(badRequestResult.Value);
-            Assert.Equal("Invalid request parameters.", (string)error.error);
+            
+            // Convert the response to JObject for easier property access
+            var json = JsonConvert.SerializeObject(badRequestResult.Value);
+            var errorObj = JsonConvert.DeserializeObject<JObject>(json);
+            
+            Assert.Equal("Invalid request parameters.", errorObj?["error"]?.ToString());
         }
 
         [Fact]
@@ -51,8 +57,12 @@ namespace api.Tests.Services
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
             Assert.Equal(401, unauthorizedResult.StatusCode);
-            var error = Assert.IsType<dynamic>(unauthorizedResult.Value);
-            Assert.Equal("Unauthorized access.", (string)error.error);
+            
+            // Convert the response to JObject for easier property access
+            var json = JsonConvert.SerializeObject(unauthorizedResult.Value);
+            var errorObj = JsonConvert.DeserializeObject<JObject>(json);
+            
+            Assert.Equal("Unauthorized access.", errorObj?["error"]?.ToString());
         }
 
         [Fact]
@@ -68,8 +78,12 @@ namespace api.Tests.Services
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, objectResult.StatusCode);
-            var error = Assert.IsType<dynamic>(objectResult.Value);
-            Assert.Equal("An error occurred while processing your request.", (string)error.error);
+            
+            // Convert the response to JObject for easier property access
+            var json = JsonConvert.SerializeObject(objectResult.Value);
+            var errorObj = JsonConvert.DeserializeObject<JObject>(json);
+            
+            Assert.Equal("An error occurred while processing your request.", errorObj?["error"]?.ToString());
         }
 
         [Fact]
@@ -89,9 +103,13 @@ namespace api.Tests.Services
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(400, badRequestResult.StatusCode);
-            var error = Assert.IsType<dynamic>(badRequestResult.Value);
-            Assert.Equal("Validation failed", (string)error.error);
-            Assert.Equal(2, ((string[])error.details).Length);
+            
+            // Convert the response to JObject for easier property access
+            var json = JsonConvert.SerializeObject(badRequestResult.Value);
+            var errorObj = JsonConvert.DeserializeObject<JObject>(json);
+            
+            Assert.Equal("Validation failed", errorObj?["error"]?.ToString());
+            Assert.Equal(2, errorObj?["details"]?.ToObject<string[]>()?.Length);
         }
     }
 }
