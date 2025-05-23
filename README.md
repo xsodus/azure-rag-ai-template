@@ -1,345 +1,142 @@
 # Azure RAG AI Template
 
-This project provides a structured template for building Retrieval Augmented Generation (RAG) AI applications using Azure OpenAI and Azure AI Search.
+This template helps you build Retrieval-Augmented Generation (RAG) AI applications using Azure OpenAI and Azure AI Search. Follow the steps below to understand RAG, set up Azure, and run the code or API.
 
-## Getting Started
+---
 
-1. Clone this repository
-2. Update the `appsettings.json` file with your Azure OpenAI and Azure AI Search credentials
-3. Build and run the project:
-   ```bash
-   cd /path/to/azure-rag-ai-template/api
-   dotnet build
-   dotnet run
-   ```
-4. Access the API documentation at `https://localhost:7222/swagger/index.html`
+## 1. What is Retrieval-Augmented Generation (RAG)?
 
-### Development Mode
+RAG combines information retrieval and AI generation. When a user asks a question, the system:
+1. Retrieves relevant documents from a large data source (like PDFs or images in Azure Blob Storage) using Azure Cognitive Search and vector embeddings.
+2. Uses Azure OpenAI (e.g., GPT-4) to generate a response based on both the user’s question and the retrieved documents.
 
-For development, you can use the in-memory implementation to avoid hitting Azure APIs:
+This approach gives more accurate, context-aware answers by grounding AI responses in your own data.
 
-```json
-{
-  "UseInMemoryServices": true
-}
-```
+---
 
-### Rate Limiting Configuration
+## 2. Azure RAG AI Architecture Diagram
 
-The API includes rate limiting to prevent abuse. Configure limits in `appsettings.json`:
-
-```json
-"IpRateLimiting": {
-  "EnableEndpointRateLimiting": true,
-  "GeneralRules": [
-    {
-      "Endpoint": "*:/api/v1/AzureOpenAI/chat",
-      "Period": "1m",
-      "Limit": 20
-    }
-  ]
-}
-```
-
-## What is Retrieval-Augmented Generation (RAG)?
-
-Retrieval-Augmented Generation (RAG) is a technique that combines the strengths of information retrieval and natural language generation. It involves retrieving relevant documents or data from a large corpus and using this information to generate more accurate and contextually relevant responses. This approach enhances the capabilities of AI models by providing them with access to a vast amount of external knowledge, leading to more informed and precise outputs.
-
-## Prerequisites
-
-1. [.NET SDK 7.0](https://dotnet.microsoft.com/download/dotnet/7.0) or later
-2. [Azure Subscription](https://azure.microsoft.com/en-us/free/)
-3. [Azure OpenAI Service](https://azure.microsoft.com/en-us/services/cognitive-services/openai-service/)
-
-## SOLID Principles Implementation
-
-This project has been refactored to follow SOLID principles:
-
-### Single Responsibility Principle (SRP)
-
-Each class has one reason to change:
-
-- `AzureOpenAIService`: Communicates with Azure OpenAI API
-- `ChatRequestHandler`: Handles chat request processing
-- `RequestValidator`: Validates incoming requests
-- `ErrorHandler`: Handles errors and creates appropriate HTTP responses
-- `AzureOpenAIController`: Handles HTTP requests and coordinates responses
-
-### Open/Closed Principle (OCP)
-
-The design is open for extension but closed for modification:
-
-- All components depend on interfaces rather than concrete implementations
-- New validation rules can be added without changing existing code
-- New error handling strategies can be added without changing controller code
-- In-memory service implementation can be used for testing without modifying production code
-
-### Liskov Substitution Principle (LSP)
-
-Subtypes are substitutable for their base types:
-
-- `InMemoryAzureOpenAIService` can be used anywhere `IAzureOpenAIService` is expected
-- Tests demonstrate that the substitution works correctly
-
-### Interface Segregation Principle (ISP)
-
-Interfaces are client-specific rather than general-purpose:
-
-- `IChatRequestHandler`: Handles only chat-specific requests
-- `IRequestValidator`: Focuses only on request validation
-- `IErrorHandler`: Specializes in error handling
-- `IAzureOpenAIService`: Provides only OpenAI-specific functionality
-
-### Dependency Inversion Principle (DIP)
-
-High-level modules depend on abstractions, not low-level modules:
-
-- Controllers depend on interfaces, not concrete implementations
-- Services depend on interfaces, not concrete implementations
-- Service registration with dependency injection supports different environments
-
-## Key Features
-
-- **SOLID Architecture**: Follows all SOLID principles for maintainable, extensible code
-- **API Versioning**: Supports versioned API endpoints for backward compatibility
-- **Rate Limiting**: Protects the API from abuse with configurable rate limits
-- **Data Validation**: Uses data annotations and custom validators
-- **Error Handling**: Centralized error handling with appropriate HTTP status codes
-- **Testing**: Comprehensive unit and integration tests
-- **Swagger Documentation**: Interactive API documentation with versioning support
-- **In-Memory Testing**: Supports testing without hitting real Azure services
-
-## API Endpoints
-
-- `POST /api/v1/AzureOpenAI/chat`: Text-based queries with RAG support
-- `POST /api/v1/AzureOpenAI/chat-with-image`: Image-based queries with RAG follow-up
-
-## Azure Resource Setup
 ![Azure RAG AI Diagram](image/azure-rag-ai-diagram.png)
 
-This diagram represents an Azure-based architecture for implementing Retrieval-Augmented Generation (RAG) with AI models. Here's the explanation of the relationships in the context of the Azure ecosystem:
+**How it works:**
 
-### User/Application:
+1. **User / Application**: The user sends a message (text or image) to the application.
+2. **OpenAI gpt-4o-mini**: The message is processed by the GPT-4o-mini model, which can use context from the vector data (retrieved documents) via AI Search.
+3. **AI Search with Vector Index**: The system searches for relevant content using a vector index built from your documents. This index is created using embeddings from the OpenAI text-embedding-ada-002 model.
+4. **OpenAI text-embedding-ada-002**: This model generates vector embeddings for your documents, making them searchable by semantic meaning.
+5. **Blob Storage**: All your source documents (PDFs, images, Excel files, etc.) are stored here. The embedding model processes these files to create the vector index.
 
-This is the entry point where users interact with the system. The users send their queries or requests via an application interface.
-OpenAI GPT-4 or GPT-4-turbo:
+The flow: User → GPT-4o-mini → (AI Search) → Vector Index (built from Blob Storage via embeddings) → Response to User
 
-This component processes user messages and generates contextually relevant queries or responses.
-The user queries are enriched or transformed into a format suitable for the search process.
+---
 
-### AI Search with Vector Index:
+## 3. How to Configure Azure
 
-This searches through a vector index created by Azure's Cognitive Search or other AI tools.
-Vector embeddings, representing the contents of documents, are queried to retrieve the most relevant documents from the indexed data.
+You’ll need:
+- An Azure subscription
+- Azure OpenAI resource (with GPT-4o-mini and text-embedding-ada-002 models)
+- Azure Blob Storage (for your documents)
+- Azure Cognitive Search (for vector search)
 
-### Azure Blob Storage:
+**Step-by-step setup:**
 
-This serves as the primary storage for various types of files like PDFs, images, Excel files, and other documents.
-It contains the data corpus used by the vector search engine.
+1. **Create Azure OpenAI Resource**
+   - In the Azure portal, create an OpenAI resource in the `East US` region.
+   - Deploy the `gpt-4o-mini` model (supports text and image input).
+   - Deploy the `text-embedding-ada-002` model for vector embeddings.
 
-### Azure OpenAI Embedding Model (text-embedding-ada-002):
+2. **Create Storage Account**
+   - Create a Storage Account (Standard, LRS) in the same region.
+   - In the storage account, create a container and upload your data (e.g., brochures.zip from [this link](https://raw.githubusercontent.com/MicrosoftLearning/mslearn-openai/refs/heads/main/Labfiles/06-use-own-data/data/brochures.zip)).
 
-This model generates vector embeddings for the documents in the blob storage.
-The embeddings are used to create a vector index for efficient and context-aware searches.
+3. **Create Azure Cognitive Search Resource**
+   - Create a Cognitive Search resource (Free tier is fine) in the same region.
+   - In the Cognitive Search portal, use “Import and vectorize data” to connect to your Blob Storage and set up a vector index using the `text-embedding-ada-002` model.
 
-### Workflow:
-1. User Input: A user sends a query or message.
-2. GPT-4 Processing: The query is pre-processed by the GPT model, ensuring it is tailored for retrieval.
-3. Search Query: The query is directed to the AI Search with Vector Index to find semantically relevant content.
-4. Vector Search: Using vector embeddings, the search system identifies relevant documents stored in the Blob Storage.
-5. Response: The retrieved content is processed and used by GPT-4 to generate a detailed and accurate response, sent back to the user.
+4. **Configure Keys and Endpoints**
+   - In the Azure portal, copy the following values:
+     - OpenAI: `KEY1`, `Endpoint`, and deployment name
+     - Cognitive Search: `Url`, `Primary admin key`, and index name
+   - Paste these into the `appsettings.json` file in both `api/` and `simple-code/` folders:
+     - `AzureOAIKey`, `AzureOAIEndpoint`, `AzureOAIDeploymentName`
+     - `AzureSearchEndpoint`, `AzureSearchKey`, `AzureSearchIndex`
 
-### Azure Key Relationships:
-- Blob Storage and Embedding Model: Data in Blob Storage is transformed into vector embeddings using the embedding model, making it searchable.
-- AI Search and GPT-4: AI Search acts as a backend to GPT-4, supplying it with relevant data for improved responses.
-- User and Azure AI: Users interact with an intelligent system that combines Azure's storage, search, and AI capabilities.
+---
 
-### Setup Resource Steps
-1. **Create Azure OpenAI Resource**:
-    - Go to the Azure portal and create a new resource in the `East US` region with the `gpt-4o-mini` model, which supports both text and image input at the lowest price.
-    - On the Azure OpenAI page, create a new resource with the following details:
-        - **Subscription**: Your subscription group
-        - **Resource group**: The resource group name from step 1
-        - **Name**: New resource name
-        - **Pricing tier**: Standard S0
+## 4. How to Run the Simple Code Example
 
-2. **Create Storage Account**:
-    - Open the Storage accounts page and create a new resource with the following details:
-        - **Subscription**: Your subscription group
-        - **Resource group**: The resource group name from step 1
-        - **Storage account name**: New account name
-        - **Region**: East US
-        - **Primary service**: Azure Blob Storage or Azure Data Lake Storage Gen 2
-        - **Performance**: Standard
-        - **Redundancy**: Locally-redundant storage (LRS)
+The `simple-code/` folder contains a minimal example (`RAGAI.cs`) showing how to use Azure OpenAI and Cognitive Search together.
 
-3. **Setup Storage Container**:
-    - Go to the new storage account page, then navigate to Data storage > Containers.
-    - Create a new container.
-    - Enter the new container and upload the data source from [this link](https://raw.githubusercontent.com/MicrosoftLearning/mslearn-openai/refs/heads/main/Labfiles/06-use-own-data/data/brochures.zip). These files contain travel brochures that will be vectorized as embedded data for AI.
+**Steps:**
+1. Open a terminal and navigate to the folder:
+   ```sh
+   cd simple-code
+   ```
+2. Restore dependencies:
+   ```sh
+   dotnet restore
+   ```
+3. Build the project:
+   ```sh
+   dotnet build
+   ```
+4. Run the example:
+   ```sh
+   dotnet run
+   ```
 
-4. **Create Azure Cognitive Search Resource**:
-    - Open the AI Search page and create a new resource with the following details:
-        - **Resource Group**: The resource group name from step 1
-        - **Service name**: New service name
-        - **Location**: East US
-        - **Pricing Tier**: Free
+---
 
-5. **Configure Azure Cognitive Search**:
-    - Go to the new AI Search resource and click on `Import and vectorize data`.
-    - Select `Azure Blob Storage` on the `Set up your data connect` page.
-    - Configure your Azure Blob Storage with the following details:
-        - **Subscription**: Your subscription group
-        - **Storage account**: The storage account from step 2
-        - **Blob container**: The blob container from step 3
-        - **Blob folder**: Leave it empty
-        - **Parsing mode**: Default
-        - **Enable deletion tracking**: Uncheck
-        - **Authenticate using managed identity**: Uncheck
-    - Click `Next` to proceed to the `Vectorize your text` step and fill in the following details:
-        - **Kind**: Azure OpenAI
-        - **Subscription**: Your subscription group
-        - **Azure OpenAI service**: The OpenAI resource from step 1
-        - **Model deployment**: Select `text-embedding-ada-002` (Deploy this model through Azure Foundry Service if not available)
-        - Check the acknowledgment box for additional costs.
-    - Click `Next` on the `Vectorize and enrich your images` step (no changes needed).
-    - Click `Next` on the `Advance settings` step (no changes needed).
-    - Click `Next` on the `Review and create` step to create the vector index.
+## 5. How to Run the REST API
 
-6. **Deploy and Configure OpenAI Model**:
-    - Go back to the OpenAI resource from step 1 and click `Go to Azure AI Foundry portal`.
-    - Deploy `gpt-4o-mini` with `Global Standard` and set the rate limit to 16K tokens per minute.
-    - Copy the `KEY1` and `Endpoint` from Resource Management > Keys and Endpoint, then paste them into `AzureOAIKey` and `AzureOAIEndpoint` in `appsettings.json`.
-    - Copy the AI model deployment name and paste it into `AzureOAIDeploymentName` in `appsettings.json`.
+The `api/` folder contains a REST API with endpoints for chat and RAG operations.
 
-7. **Configure Azure Cognitive Search in appsettings.json**:
-    - Go to the AI Search resource from step 4.
-    - Copy the `Url` from the `Overview` page and paste it into `AzureSearchEndpoint` in `appsettings.json`.
-    - Go to `Settings` > `Keys`, then copy the `Primary admin key` and paste it into `AzureSearchKey` in `appsettings.json`.
-    - Go to `Search management` > `Indexes`, then copy the `vector-xxx` name and paste it into `AzureSearchIndex` in `appsettings.json`.
+**Steps:**
+1. Navigate to the API folder:
+   ```sh
+   cd api
+   ```
+2. Restore dependencies:
+   ```sh
+   dotnet restore
+   ```
+3. Build the API:
+   ```sh
+   dotnet build
+   ```
+4. Run the API:
+   ```sh
+   dotnet run
+   ```
+5. Access the API documentation at:
+   - [https://localhost:7222/swagger/index.html](https://localhost:7222/swagger/index.html)
 
+**Main Endpoints:**
+- `POST /api/v1/AzureOpenAI/chat` — Text-based RAG chat
+- `POST /api/v1/AzureOpenAI/chat-with-image` — Image-based RAG chat
 
-## Setup
+---
 
-1. Clone the repository:
-    ```sh
-    git clone git@github.com:xsodus/azure-rag-ai-template.git
-    cd azure-rag-ai-template/simple-code
-    ```
+## 6. How to Run the Unit Tests
 
-2. Restore the dependencies:
-    ```sh
-    dotnet restore
-    ```
+Unit and integration tests are in the `api.Tests/` folder.
 
-## Running the Project
+**Steps:**
+1. Navigate to the test folder:
+   ```sh
+   cd api.Tests
+   ```
+2. Run the tests:
+   ```sh
+   dotnet test
+   ```
 
-1. Build the project:
-    ```sh
-    dotnet build
-    ```
+---
 
-2. Run the project:
-    ```sh
-    dotnet run
-    ```
+## Additional Features
+- SOLID architecture for maintainability
+- Rate limiting and validation
+- In-memory mode for local development
+- Swagger UI for API exploration
 
-## Overview
-
-The `RAGAI.cs`file is part of a project that uses Azure OpenAI and Azure Cognitive Search to implement a Retrieval-Augmented Generation (RAG) system. This system processes user queries, retrieves relevant information from a data source, and generates contextually relevant responses.
-
-### Code Explanation
-
-#### 1. Configuration
-
-The application reads configuration settings from 
-
-appsettings.json
-
-using `Microsoft.Extensions.Configuration`. This includes settings for Azure OpenAI and Azure Cognitive Search.
-
-#### 2. Initialize Azure OpenAI Client
-
-An `OpenAIClient` is initialized with the Azure OpenAI endpoint and key. This client is used to interact with the Azure OpenAI service.
-
-#### 3. Configure Data Source
-
-An `AzureSearchChatExtensionConfiguration` object is created to configure the Azure Cognitive Search data source. This configuration is used to retrieve relevant documents from the data source.
-
-#### 4. Create Chat Message with Image Content
-
-A `ChatMessageImageContentItem` is created with an image URL. This object represents an image that will be used as input for the OpenAI model.
-
-```csharp
-ChatMessageImageContentItem imageContentItem = new ChatMessageImageContentItem(
-    new Uri("https://upload.wikimedia.org/wikipedia/commons/8/85/Clock_Tower_-_Palace_of_Westminster%2C_London_-_May_2007_icon.png"),
-    ChatMessageImageDetailLevel.Low
-);
-```
-
-#### 5. Create System Message
-
-A `ChatRequestSystemMessage` is created to set up the role and expected result format. This message defines the role of the AI model and specifies the format of the response.
-
-```csharp
-ChatRequestSystemMessage systemMessage = new ChatRequestSystemMessage(
-    "You're travel agent assistant who can build the travel plan and optimize the budget for the customer. I need you to return the result as JSON data below:" +
-    "{\"place_name\":\"<place_name>\", \"place_description\":\"<place_description>\"}"
-);
-```
-
-#### 6. Ask the Model About the Place in the Image
-
-A `ChatCompletionsOptions` object is created with the system message and user message asking about the place in the image. The `GetChatCompletions` method is called on the `OpenAIClient` to get the response from the model.
-
-```csharp
-ChatCompletionsOptions chatCompletionsOptions = new ChatCompletionsOptions()
-{
-    Messages =
-    {
-        systemMessage,
-        new ChatRequestUserMessage(
-            new ChatMessageTextContentItem("What is this place in the image?"),
-            imageContentItem
-        )
-    },
-    Temperature = 0.2f,
-    DeploymentName = oaiDeploymentName
-};
-
-ChatCompletionsResponse response = openAIClient.GetChatCompletions(chatOptions);
-```
-
-#### 7. Process Response
-
-The response is deserialized from JSON to a dictionary. A new question is generated based on the response.
-
-```csharp
-var responseData = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Choices[0].Message.Content);
-string placeName = responseData["place_name"];
-string newQuestion = $"Tell me about hotels near {placeName}.";
-```
-
-#### 8. Ask About Hotels Near the Place
-
-A new `ChatCompletionsOptions` object is created with the new question and the RAG data source configuration. The `GetChatCompletions` method is called again to get the final response.
-
-```csharp
-ChatCompletionsOptions chatCompletionsOptions = new ChatCompletionsOptions()
-{
-    Messages =
-    {
-        systemMessage,
-        new ChatRequestUserMessage(nextQuestion)
-    },
-    Temperature = 0.2f,
-    DeploymentName = oaiDeploymentName,
-    // Embed a vector data source (RAG)
-    AzureExtensionsOptions = new AzureChatExtensionsOptions()
-    {
-        Extensions = {ownDataConfig}
-    }
-};
-
-ChatCompletionsResponse finalResponse = openAIClient.GetChatCompletions(newChatOptions);
-```
+For more details, see the code comments and the architecture diagram in `image/azure-rag-ai-diagram.png`.
