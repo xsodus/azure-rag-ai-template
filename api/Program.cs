@@ -1,8 +1,16 @@
+using Microsoft.AspNetCore.HttpsPolicy;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Configure HTTPS redirection
+builder.Services.Configure<HttpsRedirectionOptions>(options =>
+{
+    options.HttpsPort = 7222; // Set the HTTPS port to match launchSettings.json
+});
 
 var app = builder.Build();
 
@@ -10,9 +18,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    // Disable HTTPS redirection in development for easier testing
+    // app.UseHttpsRedirection();
 }
-
-app.UseHttpsRedirection();
+else
+{
+    app.UseHttpsRedirection();
+}
 
 var summaries = new[]
 {
